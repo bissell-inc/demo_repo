@@ -1,0 +1,56 @@
+name: Deployment to Development
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Version of the release to deploy'
+        required: true
+        default: 'latest'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  Devployment_dev:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Validate Tag
+      id: validate_tag
+      run: |
+        TAG=${{ github.ref_name || github.event.inputs.release_version }}
+        if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "VALID_TAG=true" >> $GITHUB_ENV
+        else
+          echo "VALID_TAG=false" >> $GITHUB_ENV
+          echo "Skipping Terraform plan because the tag format is invalid."
+        fi
+
+    - name: Checkout code
+      if: env.VALID_TAG == 'true'
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      if: env.VALID_TAG == 'true'
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    - name: Terraform Init
+      if: env.VALID_TAG == 'true'
+      run: terraform init
+      working-directory: ./terraform
+
+    - name: Terraform Plan
+      if: env.VALID_TAG == 'true'
+      run: terraform plan -out=tfplan
+      working-directory: ./terraform
+
+    - name: Apply Terraform Plan
+      if: env.VALID_TAG == 'true'
+      run: terraform apply -input=false -auto-approve
+      working-directory: ./terraform
