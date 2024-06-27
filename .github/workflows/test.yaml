@@ -1,8 +1,20 @@
 name: Example Workflow
 
 on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Select deployment environment
+        required: true
+        default: dev-1
+        type: choice
+        options:
+          - dev-1
+          - qa1
+          - prod
   release:
-    types: [created]
+    types:
+      - created
 
 jobs:
   build:
