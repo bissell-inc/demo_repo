@@ -27,10 +27,10 @@ jobs:
           if [ "${{ github.event_name }}" == "release" ]; then
             echo "Triggered by release, fetching release artifacts for tag: ${{ github.ref }}";
             TAG=$(echo "${{ github.ref }}" | sed 's/^refs\/tags\///');
-            echo "TAG1 ${{ TAG }} "
+            echo "TAG1 $TAG"
           else
             if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-              echo "Manual release TAG $(echo "${{ github.ref }}" | sed 's/^refs\/tags\///');"
+              echo "Manual release TAG $(echo "${{ github.ref }}" | sed 's/^refs\/tags\///')";
             else
               echo "${{ github.ref }}";
             fi
